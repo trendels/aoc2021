@@ -5,20 +5,22 @@ def read_input(s):
 
 
 def step(state):
+    new_state = state[:]
     for n in range(10):
         count = state[n]
-        state[n] -= count
+        new_state[n] -= count
         if n == 0:
-            state[7] += count
-            state[9] += count
+            new_state[6] += count
+            new_state[8] += count
         else:
-            state[n-1] += count
+            new_state[n-1] += count
+    return new_state
 
 
 def simulate_population(pop, days):
     state = [pop.count(n) for n in range(10)]
     for _ in range(days):
-        step(state)
+        state = step(state)
     return sum(state)
 
 
