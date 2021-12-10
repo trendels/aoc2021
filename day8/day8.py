@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from collections import defaultdict
 from functools import reduce
 from operator import and_
 
@@ -32,15 +31,11 @@ def read_input(s):
 
 def find_mapping(inputs):
     choices = {i: all_wires.copy() for i in all_segments}
-    inputs_by_length = defaultdict(list)
-    for s in inputs:
-        inputs_by_length[len(s)].append(s)
 
     ordering = [2, 3, 4, 7, 5, 6]
     for l in ordering:
         items = [s for s in inputs if len(s) == l]
-        candidates = digits_by_length[l]
-        common_segments = reduce(and_, [digit_segments[c] for c in candidates])
+        common_segments = reduce(and_, [digit_segments[c] for c in digits_by_length[l]])
         common_wires = reduce(and_, [set(s) for s in items])
         for x in common_segments:
             choices[x] -= (all_wires - common_wires)
