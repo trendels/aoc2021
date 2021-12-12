@@ -9,8 +9,7 @@ def read_input(s):
     return grid
 
 
-def flash(state, coords):
-    grid, flashed, total = state
+def flash(grid, coords, flashed):
     flashed.add(coords)
     x, y = coords
     for dx, dy in ((0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)):
@@ -19,50 +18,48 @@ def flash(state, coords):
             continue
         grid[neighbour] += 1
         if grid[neighbour] > 9 and neighbour not in flashed:
-            grid, flashed, total = flash((grid, flashed, total), neighbour)
-    return grid, flashed, total+1
+            flash(grid, neighbour, flashed)
 
 
-def step(state):
-    last_grid, _, total = state
-    grid = last_grid.copy()
+def step(grid):
     flashed = set()
     for coords in grid:
         grid[coords] += 1
     for coords in grid:
         if grid[coords] > 9 and coords not in flashed:
-            grid, flashed, total = flash((grid, flashed, total), coords)
+            flash(grid, coords, flashed)
     for coords in flashed:
         grid[coords] = 0
-    return grid, flashed, total
+    return len(flashed)
 
 
-def format_state(state):
-    grid, flashed, _ = state
+def format_grid(grid):
     parts = []
     for y in range(10):
         for x in range(10):
             coords = (x, y)
             if coords not in grid:
                 continue
-            parts.append(" {}{}".format(grid[coords], "*" if coords in flashed else " "))
+            parts.append(" {}{}".format(grid[coords], "*" if grid[coords] == 0 else " "))
         parts.append("\n")
     return "".join(parts)
 
 
-def simulate_steps(state, n):
+def simulate_steps(grid, n):
+    _grid = grid.copy()
+    total = 0
     for _ in range(n):
-        state = step(state)
-    return state
+        total += step(_grid)
+    return total
 
 
-def find_sync_point(state):
+def find_sync_point(grid):
+    _grid = grid.copy()
     i = 0
     while True:
         i += 1
-        state = step(state)
-        grid, flashed, _ = state
-        if len(flashed) == len(grid):
+        count = step(_grid)
+        if count == len(_grid):
             return i
 
 
@@ -80,22 +77,17 @@ def main():
     5283751526
     """)
     grid = read_input(example)
-    state = (grid, set(), 0)
-    assert simulate_steps(state, 10)[2] == 204
-    assert simulate_steps(state, 100)[2] == 1656
+    assert simulate_steps(grid, 10) == 204
+    assert simulate_steps(grid, 100) == 1656
 
     with open("input.txt") as f:
         grid = read_input(f.read())
 
-    state = (grid, set(), 0)
-
-    _, _, total = simulate_steps(state, 100)
     print("part 1")
-    print(total)
+    print(simulate_steps(grid, 100))
 
-    step = find_sync_point(state)
     print("part 2")
-    print(step)
+    print(find_sync_point(grid))
 
 
 if __name__ == "__main__":
